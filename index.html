@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>建築</title>
+<style>
+  :root { color-scheme: light; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #fff;
+    color: #1a1a1a;
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 56px 24px 8px;
+  }
+  h1 {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+    font-weight: 600;
+    font-size: 34px;
+    letter-spacing: 0.08em;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 72px;
+  }
+  .masonry { columns: 3; column-gap: 16px; }
+  @media (max-width: 900px) { .masonry { columns: 2; } }
+  @media (max-width: 560px) { .masonry { columns: 1; } }
+  .masonry figure {
+    break-inside: avoid;
+    margin-bottom: 16px;
+    cursor: zoom-in;
+    background: #f5f5f5;
+  }
+  .masonry img { display: block; width: 100%; height: auto; }
+  /* Lightbox */
+  .lightbox {
+    position: fixed; inset: 0;
+    background: rgba(255,255,255,0.97);
+    display: none;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 50;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 92vw; max-height: 82vh;
+    object-fit: contain;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  }
+  .lb-bar {
+    margin-top: 18px;
+    display: flex; align-items: center; gap: 22px;
+    font-size: 14px; color: #555;
+  }
+  .lb-bar button {
+    appearance: none; border: 1px solid #ddd; background: #fff;
+    border-radius: 999px; padding: 8px 18px;
+    font-size: 14px; color: #333; cursor: pointer;
+  }
+  .lb-bar button:hover { background: #f5f5f5; }
+  .lb-close {
+    position: absolute; top: 18px; right: 22px;
+    appearance: none; border: none; background: transparent;
+    font-size: 30px; line-height: 1; color: #666; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<header><h1>建築</h1></header>
+<main>
+  <div class="masonry" id="grid"></div>
+</main>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+  <button class="lb-close" id="lbClose" aria-label="閉じる">×</button>
+  <img id="lbImg" alt="">
+  <div class="lb-bar">
+    <button id="lbPrev">前の写真</button>
+    <span id="lbCount"></span>
+    <button id="lbNext">次の写真</button>
+  </div>
+</div>
+
+<script>
+  const photos = [
+    { name: "建築写真-1", thumb: "https://drive.google.com/thumbnail?id=1BnZwSW3frBXfpALEyjYJdQTumeJP2Oky&sz=w800", full: "https://lh3.googleusercontent.com/d/1BnZwSW3frBXfpALEyjYJdQTumeJP2Oky=w2048" },
+    { name: "建築写真-2", thumb: "https://drive.google.com/thumbnail?id=1-CXFrrZOC4i9kmpDtWNQzugayJXgrtHs&sz=w800", full: "https://lh3.googleusercontent.com/d/1-CXFrrZOC4i9kmpDtWNQzugayJXgrtHs=w2048" },
+    { name: "建築写真-3", thumb: "https://drive.google.com/thumbnail?id=1rdOniuWH8KGuURQYEucmu5virEHfRAYW&sz=w800", full: "https://lh3.googleusercontent.com/d/1rdOniuWH8KGuURQYEucmu5virEHfRAYW=w2048" },
+    { name: "建築写真-4", thumb: "https://drive.google.com/thumbnail?id=1kxy__8pFfwFib_C38ktPEwWD7jAa4xBj&sz=w800", full: "https://lh3.googleusercontent.com/d/1kxy__8pFfwFib_C38ktPEwWD7jAa4xBj=w2048" },
+    { name: "建築写真-5", thumb: "https://drive.google.com/thumbnail?id=1XxhfU1u_pzz-bCoXPKSp_Y46cM9SEynB&sz=w800", full: "https://lh3.googleusercontent.com/d/1XxhfU1u_pzz-bCoXPKSp_Y46cM9SEynB=w2048" },
+    { name: "建築写真-6", thumb: "https://drive.google.com/thumbnail?id=18_Mw5LyvrtjsFpBYX557p3nszpnYYns-&sz=w800", full: "https://lh3.googleusercontent.com/d/18_Mw5LyvrtjsFpBYX557p3nszpnYYns-=w2048" },
+    { name: "建築写真-7", thumb: "https://drive.google.com/thumbnail?id=1WOX6X0QjDB4NHKljOOC85_ARizrB6jAe&sz=w800", full: "https://lh3.googleusercontent.com/d/1WOX6X0QjDB4NHKljOOC85_ARizrB6jAe=w2048" },
+    { name: "建築写真-8", thumb: "https://drive.google.com/thumbnail?id=1A2cYDDNgcsWV6v9GgoJgMPI6w43oiAkp&sz=w800", full: "https://lh3.googleusercontent.com/d/1A2cYDDNgcsWV6v9GgoJgMPI6w43oiAkp=w2048" },
+    { name: "建築写真-9", thumb: "https://drive.google.com/thumbnail?id=1JRlnVrmzyhgdXhOK9Rl2uO9wtqvkkSBp&sz=w800", full: "https://lh3.googleusercontent.com/d/1JRlnVrmzyhgdXhOK9Rl2uO9wtqvkkSBp=w2048" }
+  ];
+
+  const grid = document.getElementById("grid");
+  photos.forEach((p, i) => {
+    const fig = document.createElement("figure");
+    const img = document.createElement("img");
+    img.src = p.thumb;
+    img.alt = p.name;
+    img.loading = "lazy";
+    fig.appendChild(img);
+    fig.addEventListener("click", () => openLb(i));
+    grid.appendChild(fig);
+  });
+
+  const lb = document.getElementById("lightbox");
+  const lbImg = document.getElementById("lbImg");
+  const lbCount = document.getElementById("lbCount");
+  let current = 0;
+
+  function show(i) {
+    current = (i + photos.length) % photos.length;
+    lbImg.src = photos[current].full;
+    lbImg.alt = photos[current].name;
+    lbCount.textContent = (current + 1) + " / " + photos.length;
+  }
+  function openLb(i) { show(i); lb.classList.add("open"); }
+  function closeLb() { lb.classList.remove("open"); }
+
+  document.getElementById("lbPrev").addEventListener("click", () => show(current - 1));
+  document.getElementById("lbNext").addEventListener("click", () => show(current + 1));
+  document.getElementById("lbClose").addEventListener("click", closeLb);
+  lb.addEventListener("click", (e) => { if (e.target === lb) closeLb(); });
+  document.addEventListener("keydown", (e) => {
+    if (!lb.classList.contains("open")) return;
+    if (e.key === "Escape") closeLb();
+    if (e.key === "ArrowLeft") show(current - 1);
+    if (e.key === "ArrowRight") show(current + 1);
+  });
+  let touchX = null;
+  lb.addEventListener("touchstart", (e) => { touchX = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener("touchend", (e) => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 40) show(current + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, { passive: true });
+</script>
+</body>
+</html>
